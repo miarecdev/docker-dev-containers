@@ -49,20 +49,34 @@ RUN mkdir -p /opt \
     && git clone https://github.com/Microsoft/vcpkg.git /opt/vcpkg \ 
     && /opt/vcpkg/bootstrap-vcpkg.sh -disableMetrics
 
-ENV VCPKG_ROOT=/opt/vcpkg
+ENV VCPKG_INSTALLATION_ROOT=/opt/vcpkg
 ENV PATH="${PATH}:/opt/vcpkg"
 
-# Fix issue "detected dubious ownership in repository"
-RUN source /opt/rh/rh-git227/enable \
-    && git config --global --add safe.directory '*'
+# Enable rh-git227
+# Copy/paste code from /opt/rh/rh-git227/enable
+ENV PATH=/opt/rh/rh-git227/root/usr/bin${PATH:+:${PATH}}
+ENV MANPATH=/opt/rh/rh-git227/root/usr/share/man:${MANPATH}
+ENV PERL5LIB=/opt/rh/rh-git227/root/usr/share/perl5/vendor_perl${PERL5LIB:+:${PERL5LIB}}
+ENV LD_LIBRARY_PATH=/opt/rh/httpd24/root/usr/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
 
-# Enable git 2.x from RH software collections for both login and non-login shells
-# Some magic to fix the following issue with git:
-#   /opt/rh/rh-git227/root/usr/libexec/git-core/git-remote-https: error while loading shared libraries: libcurl-httpd24.so.4: cannot open shared object file: No such file or directory
-# SRC: https://github.com/apple/swift-docker/pull/306
-RUN ln -s /opt/rh/rh-git227/enable /etc/profile.d/git.sh
-ENV ENV=/etc/profile.d/git.sh
-ENV BASH_ENV=$ENV
+# Enable devtoolset-7
+# Copy/paste code from /opt/rh/devtoolset-7/enable
+ENV PATH=/opt/rh/devtoolset-7/root/usr/bin${PATH:+:${PATH}}
+ENV MANPATH=/opt/rh/devtoolset-7/root/usr/share/man:${MANPATH}
+ENV INFOPATH=/opt/rh/devtoolset-7/root/usr/share/info${INFOPATH:+:${INFOPATH}}
+ENV PCP_DIR=/opt/rh/devtoolset-7/root
+# Some perl Ext::MakeMaker versions install things under /usr/lib/perl5
+# even though the system otherwise would go to /usr/lib64/perl5.
+ENV PERL5LIB=/opt/rh/devtoolset-7/root//usr/lib64/perl5/vendor_perl:/opt/rh/devtoolset-7/root/usr/lib/perl5:/opt/rh/devtoolset-7/root//usr/share/perl5/vendor_perl${PERL5LIB:+:${PERL5LIB}}
+
+ENV LD_LIBRARY_PATH=/opt/rh/devtoolset-7/root$rpmlibdir$rpmlibdir32${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+ENV LD_LIBRARY_PATH=/opt/rh/devtoolset-7/root$rpmlibdir$rpmlibdir32:/opt/rh/devtoolset-7/root$rpmlibdir/dyninst$rpmlibdir32/dyninst${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}       
+# duplicate python site.py logic for sitepackages
+ENV PYTHONPATH=/opt/rh/devtoolset-7/root/usr/lib64/python2.7/site-packages:/opt/rh/devtoolset-7/root/usr/lib/python2.7/site-packages${PYTHONPATH:+:${PYTHONPATH}}
+
+
+# Fix issue "detected dubious ownership in repository"
+RUN git config --global --add safe.directory '*'
 
 WORKDIR /data
-CMD /bin/scl enable devtoolset-7 /bin/bash
+CMD  /bin/bash
