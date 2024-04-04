@@ -22,7 +22,7 @@ RUN dnf install -y \
    git \
    libpcap-devel \
    # perl packages are required for OpenSSL
-   perl-FindBin perl-IPC-Cmd \
+   perl-IPC-Cmd \
    && \
   #
   # cleanup
