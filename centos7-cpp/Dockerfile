@@ -2,7 +2,7 @@ FROM centos:7
 
 LABEL "maintainer"="MiaRec dev@miarec.com"
 
-ARG CMAKE_VERSION=3.27.1
+ARG CMAKE_VERSION=3.29.0
 ARG NINJA_VERSION=1.11.1
 
 RUN yum update -y && \
@@ -25,6 +25,8 @@ RUN yum install -y \
    flex bison \
    rh-git227-git \
    libpcap-devel \
+   # perl packages are required for OpenSSL
+   perl-FindBin perl-IPC-Cmd \
    && \
   #
   # cleanup
