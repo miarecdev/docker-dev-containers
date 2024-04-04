@@ -5,7 +5,7 @@ name: Build and publish a Docker images
   pull_request:
   push:
     branches:
-      - main
+      - master
     paths-ignore:
         - '**.md'
   workflow_dispatch:
