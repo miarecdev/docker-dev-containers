@@ -11,7 +11,7 @@ name: Build and publish a Docker images
 
 jobs:
     build_and_publish:
-        name: Test
+        name: Build and Publish
         runs-on: ubuntu-latest
         strategy:
             # Set fail-fast to false to ensure that feedback is delivered for all matrix combinations. Consider changing this to true when your workflow is stable.
