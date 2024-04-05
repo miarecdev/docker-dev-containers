@@ -11,9 +11,9 @@ ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update -y && \
    apt-get install -y \
    curl zip unzip tar \
-   autoconf libtool pkg-config \
+   make automake autoconf libtool pkg-config \
    bison flex \
-   g++ \
+   gcc g++ \
    git \
    libpcap-dev \
    && \
