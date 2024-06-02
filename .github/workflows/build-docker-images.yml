@@ -24,6 +24,7 @@ jobs:
                     - rockylinux9-cpp
                     - ubuntu20.04-cpp
                     - ubuntu22.04-cpp
+                    - ubuntu24.04-cpp
 
         steps:
             - uses: actions/checkout@v4
