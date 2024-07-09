@@ -6,6 +6,12 @@ LABEL "maintainer"="MiaRec dev@miarec.com"
 ARG CMAKE_VERSION=3.29.0
 ARG NINJA_VERSION=1.11.1
 
+
+# Point to yum to vault.centos.org because mirror.centos.org is not available anymore (EOL)
+RUN sed -i 's/^mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-* && \
+   sed -i 's|^#\s*baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
+
+# Update system packages
 RUN yum update -y && \
    yum install -y \
    centos-release-scl && \
@@ -13,6 +19,10 @@ RUN yum update -y && \
   # cleanup
   #
   yum -y clean all && rm -rf /var/cache/yum
+
+# Fix base url for CentOS-SCLo-scl-rh.repo and CentOS-SCLo-scl.repo (after installing centos-release-scl package)
+RUN sed -i 's/^mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-SCLo-* && \
+   sed -i 's|^#\s*baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-SCLo-*
 
 # CAUTION! Do not use devtoolset-8 because it causes weird segmentation fault with -O2 is enabled
 
