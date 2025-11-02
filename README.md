@@ -1,24 +1,72 @@
 # A collection of Docker images for development
 
+## Containers for C++ development
 
-# Containers for C++ development
+These containers include commonly used C++ development tools such as CMake, G++, Ninja Build and vcpkg.
 
-- [centos7-cpp](centos7-cpp/Dockerfile): includes CMake, G++, Ninja Build and vcpkg
+A primary use case for these containers is to build MiaRec recorder (C++ application) in GitHub Actions workflows.
+
+- [centos7-cpp](centos7-cpp/Dockerfile): Centos 7 (DEPRECATED, not supported anymore because it cannot be run on Github Actions)
+- [rockylinux8-cpp](rockylinux8-cpp/Dockerfile): Rocky Linux 8
+- [rockylinux9-cpp](rockylinux9-cpp/Dockerfile): Rocky Linux 9
+- [ubuntu20.04-cpp](ubuntu20.04-cpp/Dockerfile): Ubuntu 20.04
+- [ubuntu22.04-cpp](ubuntu22.04-cpp/Dockerfile): Ubuntu 22.04
+- [ubuntu24.04-cpp](ubuntu24.04-cpp/Dockerfile): Ubuntu 24.04
 
 
-# Build and run locally
+## Usage via GitHub Container Registry
+
+These docker images are automatically built using GitHub Action of this repo and pushed to GitHub Container Registry under the name `ghcr.io/miarec/{IMAGE_NAME}:latest` (replace `{IMAGE_NAME}` with the desired image name, for example, `ghcr.io/miarec/rockylinux9-cpp:latest`).
+
+You can use these images in your GitHub Actions workflows as described below.
+
+    jobs:
+      build:
+        runs-on: ubuntu-latest
+        container:
+          image: ghcr.io/miarec/rockylinux9-cpp:latest
+        steps:
+          # Your steps here
+
+Example of a matrix build:
+
+    jobs:
+    build:
+        runs-on: ${{ matrix.runner }}
+        container:
+        image: ${{ matrix.container || '' }}
+
+        matrix:
+            include:
+            - name: ubuntu-24.04
+                runner: ubuntu-latest
+                container: ghcr.io/miarecdev/ubuntu24.04-cpp:latest
+                distro: ubuntu
+                cmake_preset: linux
+
+            - name: rockylinux-9
+                runner: ubuntu-latest
+                container: ghcr.io/miarecdev/rockylinux9-cpp:latest
+                distro: rocky
+                cmake_preset: linux
+
+
+## Build and run locally
 
 Build the container locally:
 
-    docker build -t miarec/centos7-cpp:latest centos7-cpp
+    docker build -t miarec/rockylinux9-cpp:latest rockylinux9-cpp
 
 Run the locally built container:
 
-    docker run -v `pwd`:/data -it miarec/centos7-cpp:latest
+    docker run -v `pwd`:/data -it miarec/rockylinux9-cpp:latest
 
 
-# Upload to Docker Hub
+## Upload to Docker Hub
 
+Note, if you want to use these images from GitHub Actions, they are available from GitHub Container Registry as described above.
+
+If you need these images on Docker Hub, you can push them there as follows.
 
 Login to Docker Hub with your credentials
 
@@ -34,7 +82,7 @@ Run container from Docker Hub:
 
     docker run -v `pwd`:/data -it miarec/centos7-cpp:latest
 
-# Troubleshooting docker builds
+## Troubleshooting docker builds
 
 Run docker build command with `DOCKER_BUILDKIT=0` to see docker image ids.
 
