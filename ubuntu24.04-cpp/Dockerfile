@@ -40,6 +40,7 @@ RUN mkdir -p /opt \
     && /opt/vcpkg/bootstrap-vcpkg.sh -disableMetrics
 
 ENV VCPKG_INSTALLATION_ROOT=/opt/vcpkg
+ENV VCPKG_ROOT=/opt/vcpkg
 ENV PATH="${PATH}:/opt/vcpkg"
 
 
@@ -47,4 +48,4 @@ ENV PATH="${PATH}:/opt/vcpkg"
 RUN git config --global --add safe.directory '*'
 
 WORKDIR /data
-CMD /bin/bash
+CMD ["/bin/bash"]

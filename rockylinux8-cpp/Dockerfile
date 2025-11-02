@@ -50,10 +50,11 @@ RUN mkdir -p /opt \
     && /opt/vcpkg/bootstrap-vcpkg.sh -disableMetrics
 
 ENV VCPKG_INSTALLATION_ROOT=/opt/vcpkg
+ENV VCPKG_ROOT=/opt/vcpkg
 ENV PATH="${PATH}:/opt/vcpkg"
 
 # Fix issue "detected dubious ownership in repository"
 RUN git config --global --add safe.directory '*'
 
 WORKDIR /data
-CMD  /bin/bash
+CMD ["/bin/bash"]
