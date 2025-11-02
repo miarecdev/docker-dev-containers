@@ -22,6 +22,8 @@ RUN dnf install -y \
    flex bison \
    git \
    libpcap-devel \
+   # Kernel headers (required for building openssl)
+   kernel-headers \
    # perl packages are required for OpenSSL
    perl-FindBin perl-IPC-Cmd \
    && \
