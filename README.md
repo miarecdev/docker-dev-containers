@@ -64,13 +64,9 @@ Run the locally built container:
 
 ## Redis TLS test container
 
-The `redis-tls` image bundles Redis configured for TLS so you can test secure connections locally. The image generates self-signed CA/server certificates during build, so you can run it without mounting anything:
+The `redis-tls` image bundles Redis configured for TLS so you can test secure connections locally. Certificates are not baked into the image; mount your own certs to `/tls`:
 
     docker build -t ghcr.io/miarec/redis-tls:local redis-tls
-    docker run --rm -p 6379:6379 ghcr.io/miarec/redis-tls:local
-
-Mount custom certificates or reuse locally generated ones (for client-auth or verification):
-
     docker run --rm -p 6379:6379 -v "$(pwd)/redis-tls/certs:/tls" ghcr.io/miarec/redis-tls:local
 
 Control TLS client authentication with `TLS_AUTH_CLIENTS` (defaults to `no`):

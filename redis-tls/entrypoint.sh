@@ -5,7 +5,7 @@ TLS_AUTH_CLIENTS_VALUE="${TLS_AUTH_CLIENTS:-no}"
 
 for file in /tls/ca.crt /tls/server.crt /tls/server.key; do
   if [ ! -f "$file" ]; then
-    echo "TLS file $file is missing. Mount certificates to /tls or rebuild the image with certs present."
+    echo "TLS file $file is missing. Supply certificates by mounting a directory to /tls containing: ca.crt, server.crt, server.key"
     exit 1
   fi
 done

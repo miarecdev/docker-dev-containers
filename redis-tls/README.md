@@ -1,6 +1,6 @@
 # Redis TLS test container
 
-This image runs Redis with TLS enabled for local testing. The Docker build generates self-signed CA and server certificates inside the image so it works out of the box without mounting anything. You can still mount your own certificates to `/tls` if you want to enforce client authentication.
+This image runs Redis with TLS enabled for local testing. Certificates are not baked into the image—you must mount a directory with `ca.crt`, `server.crt`, and `server.key` to `/tls`. You can generate these with the helper scripts in this folder.
 
 ## Build the image
 
@@ -8,9 +8,8 @@ This image runs Redis with TLS enabled for local testing. The Docker build gener
 
 ## Run Redis with TLS
 
-- Quick start using built-in certs (client auth disabled by default): `docker run --rm -p 6379:6379 ghcr.io/miarec/redis-tls:local`.
-- To use your own certificates, mount them to `/tls`: `docker run --rm -p 6379:6379 -v "$(pwd)/redis-tls/certs:/tls" ghcr.io/miarec/redis-tls:local`.
-- Control client certificate enforcement with `TLS_AUTH_CLIENTS` (defaults to `no`): `docker run --rm -e TLS_AUTH_CLIENTS=yes -p 6379:6379 ghcr.io/miarec/redis-tls:local`.
+- Generate certificates locally (see below), then run: `docker run --rm -p 6379:6379 -v "$(pwd)/redis-tls/certs:/tls" ghcr.io/miarec/redis-tls:local`.
+- Control client certificate enforcement with `TLS_AUTH_CLIENTS` (defaults to `no`): `docker run --rm -e TLS_AUTH_CLIENTS=yes -p 6379:6379 -v "$(pwd)/redis-tls/certs:/tls" ghcr.io/miarec/redis-tls:local`.
 
 Redis is started with:
 
@@ -23,9 +22,9 @@ Redis is started with:
 --tls-auth-clients ${TLS_AUTH_CLIENTS}
 ```
 
-## Generate CA/server certificates locally (optional)
+## Generate CA/server certificates
 
-- If you prefer to supply your own certs, run `./generate_certificates.sh` to create `ca.crt`, `server.crt`, and `server.key` in `redis-tls/certs`. Use `--force` to regenerate.
+- Run `./generate_certificates.sh` to create `ca.crt`, `server.crt`, and `server.key` in `redis-tls/certs`. Use `--force` to regenerate.
 - Mount them to `/tls` when running the container (see above).
 
 ## Generate client certificates (for client-auth scenarios)
@@ -35,5 +34,5 @@ Redis is started with:
 
 ## Connect with redis-cli
 
-- Using bundled certs with client auth disabled: `redis-cli --tls --insecure -p 6379` (self-signed server cert).
-- Using your own mounted certs with client auth enabled: `redis-cli --tls --cacert redis-tls/certs/ca.crt --cert redis-tls/certs/app.crt --key redis-tls/certs/app.key -p 6379`.
+- Without client auth (server uses your mounted certs): `redis-cli --tls --cacert redis-tls/certs/ca.crt --insecure -p 6379` (use `--insecure` if you skip hostname verification).
+- With client auth enabled: `redis-cli --tls --cacert redis-tls/certs/ca.crt --cert redis-tls/certs/app.crt --key redis-tls/certs/app.key -p 6379`.
