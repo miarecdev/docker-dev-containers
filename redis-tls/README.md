@@ -1,15 +1,65 @@
-# Redis TLS test container
+# Redis TLS Test Container
 
-This image runs Redis with TLS enabled for local testing. Certificates are not baked into the image—you must mount a directory with `ca.crt`, `server.crt`, and `server.key` to `/tls`. You can generate these with the helper scripts in this folder.
+This image runs Redis with TLS enabled for local testing. Certificates are not baked into the image—you must generate them and mount to `/tls`.
 
-## Build the image
+## Quick Start
 
-- Build locally with: `docker build -t ghcr.io/miarec/redis-tls:local redis-tls`.
+```bash
+cd redis-tls
 
-## Run Redis with TLS
+# Generate certificates, build image, run container, and test
+make test
 
-- Generate certificates locally (see below), then run: `docker run --rm -p 6379:6379 -v "$(pwd)/redis-tls/certs:/tls" ghcr.io/miarec/redis-tls:local`.
-- Control client certificate enforcement with `TLS_AUTH_CLIENTS` (defaults to `no`): `docker run --rm -e TLS_AUTH_CLIENTS=yes -p 6379:6379 -v "$(pwd)/redis-tls/certs:/tls" ghcr.io/miarec/redis-tls:local`.
+# Run interactive redis-cli session
+make cli
+
+# Stop the container
+make stop
+```
+
+## Available Make Targets
+
+| Target | Description |
+|--------|-------------|
+| `make ssl` | Generate all certificates (CA, server, client) |
+| `make ca-ssl` | Generate CA certificate only |
+| `make server-ssl` | Generate server certificate (requires CA) |
+| `make client-ssl` | Generate client certificate (requires CA) |
+| `make build` | Build Docker image |
+| `make run` | Run Redis container in background |
+| `make test` | Test PING/PONG against Redis server |
+| `make check` | Alias for test |
+| `make cli` | Run redis-cli in interactive mode |
+| `make logs` | Show container logs |
+| `make stop` | Stop the container |
+| `make clean` | Remove certificates and stop container |
+
+## Configuration
+
+Override defaults via command-line arguments:
+
+```bash
+# Use custom certificate directory
+make ssl CERT_DIR=/tmp/my-certs
+
+# Use custom image tag
+make build IMAGE_TAG=my-redis:latest
+
+# Run on a different port
+make run PORT=6381
+
+# Use custom client certificate name
+make client-ssl CLIENT_NAME=myapp
+```
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `CERT_DIR` | `~/.redis-tls` | Certificate directory |
+| `IMAGE_TAG` | `miarec/redis-tls` | Docker image tag |
+| `PORT` | `6380` | Host port to expose |
+| `CLIENT_NAME` | `client` | Client certificate name |
+
+## TLS Configuration
 
 Redis is started with:
 
@@ -22,17 +72,19 @@ Redis is started with:
 --tls-auth-clients ${TLS_AUTH_CLIENTS}
 ```
 
-## Generate CA/server certificates
-
-- Run `./generate_certificates.sh` to create `ca.crt`, `server.crt`, and `server.key` in `redis-tls/certs`. Use `--force` to regenerate.
-- Mount them to `/tls` when running the container (see above).
-
-## Generate client certificates (for client-auth scenarios)
-
-- Create a client certificate signed by the CA: `./generate_client_certs.sh --name app --output-dir ./redis-tls/certs`.
-- The script searches for the CA in `./certs` by default; override with `--ca-cert` and `--ca-key` if needed. Use `--force` to overwrite existing client keys.
+Control client certificate enforcement with `TLS_AUTH_CLIENTS` environment variable (defaults to `no`).
 
 ## Connect with redis-cli
 
-- Without client auth (server uses your mounted certs): `redis-cli --tls --cacert redis-tls/certs/ca.crt --insecure -p 6379` (use `--insecure` if you skip hostname verification).
-- With client auth enabled: `redis-cli --tls --cacert redis-tls/certs/ca.crt --cert redis-tls/certs/app.crt --key redis-tls/certs/app.key -p 6379`.
+Without client auth:
+```bash
+redis-cli --tls --cacert ~/.redis-tls/ca.crt -p 6380
+```
+
+With client auth enabled:
+```bash
+redis-cli --tls --cacert ~/.redis-tls/ca.crt \
+  --cert ~/.redis-tls/client.crt \
+  --key ~/.redis-tls/client.key \
+  -p 6380
+```
