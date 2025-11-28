@@ -12,6 +12,7 @@ A primary use case for these containers is to build MiaRec recorder (C++ applica
 - [ubuntu20.04-cpp](ubuntu20.04-cpp/Dockerfile): Ubuntu 20.04
 - [ubuntu22.04-cpp](ubuntu22.04-cpp/Dockerfile): Ubuntu 22.04
 - [ubuntu24.04-cpp](ubuntu24.04-cpp/Dockerfile): Ubuntu 24.04
+- [redis-tls](redis-tls/Dockerfile): Redis with TLS enabled for testing (see redis-tls/README.md)
 
 
 ## Usage via GitHub Container Registry
@@ -60,6 +61,27 @@ Build the container locally:
 Run the locally built container:
 
     docker run -v `pwd`:/data -it miarec/rockylinux9-cpp:latest
+
+## Redis TLS test container
+
+The `redis-tls` image bundles Redis configured for TLS so you can test secure connections locally. The image generates self-signed CA/server certificates during build, so you can run it without mounting anything:
+
+    docker build -t ghcr.io/miarec/redis-tls:local redis-tls
+    docker run --rm -p 6379:6379 ghcr.io/miarec/redis-tls:local
+
+Mount custom certificates or reuse locally generated ones (for client-auth or verification):
+
+    docker run --rm -p 6379:6379 -v "$(pwd)/redis-tls/certs:/tls" ghcr.io/miarec/redis-tls:local
+
+Control TLS client authentication with `TLS_AUTH_CLIENTS` (defaults to `no`):
+
+    docker run --rm -e TLS_AUTH_CLIENTS=yes -p 6379:6379 ghcr.io/miarec/redis-tls:local
+
+Generate a client certificate signed by the CA (when using custom certs or client auth):
+
+    ./redis-tls/generate_client_certs.sh --name app --output-dir ./redis-tls/certs
+
+See `redis-tls/README.md` for additional usage notes.
 
 
 ## Upload to Docker Hub
