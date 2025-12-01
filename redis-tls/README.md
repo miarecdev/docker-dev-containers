@@ -77,14 +77,50 @@ Control client certificate enforcement with `TLS_AUTH_CLIENTS` environment varia
 ## Connect with redis-cli
 
 Without client auth:
+
 ```bash
 redis-cli --tls --cacert ~/.redis-tls/ca.crt -p 6380
 ```
 
 With client auth enabled:
+
 ```bash
 redis-cli --tls --cacert ~/.redis-tls/ca.crt \
   --cert ~/.redis-tls/client.crt \
   --key ~/.redis-tls/client.key \
   -p 6380
 ```
+
+## Run docker container manually
+
+This `redis-tls` image bundles Redis configured for TLS so you can test secure connections locally. 
+Certificates are not baked into the image; mount your own certs to `/tls`:
+
+First, generate CA and server ertificates if you don't have them:
+
+```bash
+make ca-ssl
+make server-ssl
+```
+
+This will create the certs in `~/.redis-tls` by default.
+
+Then, build the container with the desired tag:
+
+```bash
+docker build -t miarec/redis-tls .
+```
+
+Finally, run the container, mounting your certs:
+
+```bash
+docker run --rm -p 6379:6379 -v "$(pwd)/redis-tls/certs:/tls" miarec/redis-tls
+```
+
+Control TLS client authentication with `TLS_AUTH_CLIENTS` (defaults to `no`):
+
+```bash
+docker run --rm -e TLS_AUTH_CLIENTS=yes -p 6379:6379 miarec/redis-tls
+```
+
+

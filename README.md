@@ -1,8 +1,9 @@
-# A collection of Docker images for development
+# A collection of Docker images for development and testing
+
 
 ## Containers for C++ development
 
-These containers include commonly used C++ development tools such as CMake, G++, Ninja Build and vcpkg.
+These containers include the commonly used C++ development tools such as CMake, G++, Ninja Build and vcpkg.
 
 A primary use case for these containers is to build MiaRec recorder (C++ application) in GitHub Actions workflows.
 
@@ -12,7 +13,11 @@ A primary use case for these containers is to build MiaRec recorder (C++ applica
 - [ubuntu20.04-cpp](ubuntu20.04-cpp/Dockerfile): Ubuntu 20.04
 - [ubuntu22.04-cpp](ubuntu22.04-cpp/Dockerfile): Ubuntu 22.04
 - [ubuntu24.04-cpp](ubuntu24.04-cpp/Dockerfile): Ubuntu 24.04
-- [redis-tls](redis-tls/Dockerfile): Redis with TLS enabled for testing (see redis-tls/README.md)
+
+
+## Containers for testing
+
+- [redis-tls](redis-tls/Dockerfile): Redis with TLS enabled for testing (see [README.md](redis-tls/README.md) for details)
 
 
 ## Usage via GitHub Container Registry
@@ -54,30 +59,13 @@ Example of a matrix build:
 
 ## Build and run locally
 
-Build the container locally:
+Build the container locally with the desired tag:
 
     docker build -t miarec/rockylinux9-cpp:latest rockylinux9-cpp
 
-Run the locally built container:
+Run the locally built container in the interactive mode:
 
     docker run -v `pwd`:/data -it miarec/rockylinux9-cpp:latest
-
-## Redis TLS test container
-
-The `redis-tls` image bundles Redis configured for TLS so you can test secure connections locally. Certificates are not baked into the image; mount your own certs to `/tls`:
-
-    docker build -t ghcr.io/miarec/redis-tls:local redis-tls
-    docker run --rm -p 6379:6379 -v "$(pwd)/redis-tls/certs:/tls" ghcr.io/miarec/redis-tls:local
-
-Control TLS client authentication with `TLS_AUTH_CLIENTS` (defaults to `no`):
-
-    docker run --rm -e TLS_AUTH_CLIENTS=yes -p 6379:6379 ghcr.io/miarec/redis-tls:local
-
-Generate a client certificate signed by the CA (when using custom certs or client auth):
-
-    ./redis-tls/generate_client_certs.sh --name app --output-dir ./redis-tls/certs
-
-See `redis-tls/README.md` for additional usage notes.
 
 
 ## Upload to Docker Hub
@@ -88,52 +76,63 @@ If you need these images on Docker Hub, you can push them there as follows.
 
 Login to Docker Hub with your credentials
 
-    docker login
+```bash
+docker login
+```
 
 Build the container (as described above).
 
 Push container to Docker Hub:
 
-    docker push miarec/centos7-cpp:latest
+```bash
+docker push miarec/centos7-cpp:latest
+```
 
 Run container from Docker Hub:
 
-    docker run -v `pwd`:/data -it miarec/centos7-cpp:latest
+```bash
+docker run -v `pwd`:/data -it miarec/centos7-cpp:latest
+```
 
 ## Troubleshooting docker builds
 
 Run docker build command with `DOCKER_BUILDKIT=0` to see docker image ids.
 
-    DOCKER_BUILDKIT=0 docker build -t miarec/centos7-cpp:latest centos7-cpp
+```bash
+DOCKER_BUILDKIT=0 docker build -t miarec/centos7-cpp:latest centos7-cpp
+```
 
+You will see the image layer ids, like this:
 
-You will see the image layer ids:
+```bash
+Sending build context to Docker daemon 47.62 kB
+Step 1/3 : FROM busybox
+---> 00f017a8c2a6
+Step 2/3 : RUN echo 'foo' > /tmp/foo.txt
+---> Running in 4dbd01ebf27f
+---> 044e1532c690
+Removing intermediate container 4dbd01ebf27f
+Step 3/3 : RUN echo 'bar' >> /tmp/foo.txt
+---> Running in 74d81cb9d2b1
+---> 5bd8172529c1
+Removing intermediate container 74d81cb9d2b1
+Successfully built 5bd8172529c1
+```
 
-    $ DOCKER_BUILDKIT=0 docker build -t so-26220957 .
-    Sending build context to Docker daemon 47.62 kB
-    Step 1/3 : FROM busybox
-    ---> 00f017a8c2a6
-    Step 2/3 : RUN echo 'foo' > /tmp/foo.txt
-    ---> Running in 4dbd01ebf27f
-    ---> 044e1532c690
-    Removing intermediate container 4dbd01ebf27f
-    Step 3/3 : RUN echo 'bar' >> /tmp/foo.txt
-    ---> Running in 74d81cb9d2b1
-    ---> 5bd8172529c1
-    Removing intermediate container 74d81cb9d2b1
-    Successfully built 5bd8172529c1
+You can now start a new container from any of these layers and investigate the filesystem:
 
-You can now start a new container from 00f017a8c2a6, 044e1532c690 and 5bd8172529c1:
+```bash
+$ docker run --rm 00f017a8c2a6 cat /tmp/foo.txt
+cat: /tmp/foo.txt: No such file or directory
+```
 
-    $ docker run --rm 00f017a8c2a6 cat /tmp/foo.txt
-    cat: /tmp/foo.txt: No such file or directory
+Of course you might want to start an interactive shell to explore the filesystem and try out commands:
 
-
-of course you might want to start a shell to explore the filesystem and try out commands:
-
-    $ docker run --rm -it 044e1532c690 sh      
-    / # ls -l /tmp
-    total 4
-    -rw-r--r--    1 root     root             4 Mar  9 19:09 foo.txt
-    / # cat /tmp/foo.txt 
-    foo
+```bash
+$ docker run --rm -it 044e1532c690 sh      
+/ # ls -l /tmp
+total 4
+-rw-r--r--    1 root     root             4 Mar  9 19:09 foo.txt
+/ # cat /tmp/foo.txt 
+foo
+```
