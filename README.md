@@ -22,7 +22,7 @@ A primary use case for these containers is to build MiaRec recorder (C++ applica
 
 ## Usage via GitHub Container Registry
 
-These docker images are automatically built using GitHub Action of this repo and pushed to GitHub Container Registry under the name `ghcr.io/miarec/{IMAGE_NAME}:latest` (replace `{IMAGE_NAME}` with the desired image name, for example, `ghcr.io/miarec/rockylinux9-cpp:latest`).
+These docker images are automatically built using GitHub Action of this repo and pushed to GitHub Container Registry under the name `ghcr.io/miarecdev/{IMAGE_NAME}:latest` (replace `{IMAGE_NAME}` with the desired image name, for example, `ghcr.io/miarecdev/rockylinux9-cpp:latest`).
 
 You can use these images in your GitHub Actions workflows as described below.
 
@@ -30,7 +30,7 @@ You can use these images in your GitHub Actions workflows as described below.
       build:
         runs-on: ubuntu-latest
         container:
-          image: ghcr.io/miarec/rockylinux9-cpp:latest
+          image: ghcr.io/miarecdev/rockylinux9-cpp:latest
         steps:
           # Your steps here
 
