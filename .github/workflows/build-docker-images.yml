@@ -87,3 +87,13 @@ jobs:
                   ghcr.io/${{github.repository_owner}}/${{matrix.image}}:amd64 \
                   ghcr.io/${{github.repository_owner}}/${{matrix.image}}:arm64
                 docker manifest push ghcr.io/${{github.repository_owner}}/${{matrix.image}}:latest
+
+            - name: Make package public
+              run: |
+                gh api \
+                  --method PUT \
+                  -H "Accept: application/vnd.github+json" \
+                  /orgs/${{github.repository_owner}}/packages/container/${{matrix.image}}/visibility \
+                  -f visibility='public' || echo "Could not change visibility (may require admin permissions)"
+              env:
+                GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
