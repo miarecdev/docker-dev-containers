@@ -9,6 +9,9 @@ name: Build and publish a Docker images
         - '**.md'
   workflow_dispatch:
 
+# Explicit permissions for GITHUB_TOKEN. These are optional if the repository's
+# default workflow permissions are set to "Read and write" (Settings -> Actions -> General).
+# Included here for clarity and to ensure the workflow works regardless of repo defaults.
 permissions:
   contents: read
   packages: write
