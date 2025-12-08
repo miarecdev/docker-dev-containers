@@ -4,7 +4,7 @@ LABEL org.opencontainers.image.source="https://github.com/miarecdev/docker-dev-c
 LABEL "maintainer"="MiaRec dev@miarec.com"
 
 ARG CMAKE_VERSION=3.29.0
-ARG NINJA_VERSION=1.11.1
+ARG NINJA_VERSION=1.12.1
 
 
 # Enable "Code Ready Builder" (CRB) repository,
