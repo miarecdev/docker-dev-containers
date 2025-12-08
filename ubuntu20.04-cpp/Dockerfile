@@ -23,17 +23,18 @@ RUN apt-get update -y && \
   rm -rf /var/lib/apt/lists/*
 
 
-# Install cmake
-RUN \
-  curl -LO https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz \
-  && tar -xzf cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz -C /usr/local --strip-components=1 \
-  && rm cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz 
+# Install cmake (detect architecture)
+RUN ARCH=$(uname -m) && \
+  curl -LO https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-${ARCH}.tar.gz \
+  && tar -xzf cmake-${CMAKE_VERSION}-linux-${ARCH}.tar.gz -C /usr/local --strip-components=1 \
+  && rm cmake-${CMAKE_VERSION}-linux-${ARCH}.tar.gz
 
-# Install ninja build
-RUN \
-  curl -LO https://github.com/ninja-build/ninja/releases/download/v${NINJA_VERSION}/ninja-linux.zip \
-  && unzip ninja-linux.zip -d /usr/local/bin \
-  && rm ninja-linux.zip
+# Install ninja build (detect architecture)
+RUN ARCH=$(uname -m) && \
+  if [ "$ARCH" = "x86_64" ]; then NINJA_ARCH="linux"; else NINJA_ARCH="linux-aarch64"; fi && \
+  curl -LO https://github.com/ninja-build/ninja/releases/download/v${NINJA_VERSION}/ninja-${NINJA_ARCH}.zip \
+  && unzip ninja-${NINJA_ARCH}.zip -d /usr/local/bin \
+  && rm ninja-${NINJA_ARCH}.zip
 
 # Install vcpkg
 RUN mkdir -p /opt \
