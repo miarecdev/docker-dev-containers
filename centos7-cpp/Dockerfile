@@ -4,7 +4,7 @@ LABEL org.opencontainers.image.source="https://github.com/miarecdev/docker-dev-c
 LABEL "maintainer"="MiaRec dev@miarec.com"
 
 ARG CMAKE_VERSION=3.29.0
-ARG NINJA_VERSION=1.11.1
+ARG NINJA_VERSION=1.12.1
 
 
 # Point to yum to vault.centos.org because mirror.centos.org is not available anymore (EOL)
@@ -21,8 +21,12 @@ RUN yum update -y && \
   yum -y clean all && rm -rf /var/cache/yum
 
 # Fix base url for CentOS-SCLo-scl-rh.repo and CentOS-SCLo-scl.repo (after installing centos-release-scl package)
-RUN sed -i 's/^mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-SCLo-* && \
-   sed -i 's|^#\s*baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-SCLo-*
+RUN ARCH=$(uname -m) && \
+   sed -i 's/^mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-SCLo-* && \
+   sed -i 's|^#\s*baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-SCLo-* && \
+   if [ "$ARCH" = "aarch64" ]; then \
+      sed -i 's|vault.centos.org/centos/7/sclo|vault.centos.org/altarch/7/sclo|g' /etc/yum.repos.d/CentOS-SCLo-*; \
+   fi
 
 # CAUTION! Do not use devtoolset-8 because it causes weird segmentation fault with -O2 is enabled
 
@@ -44,17 +48,18 @@ RUN yum install -y \
   #
   yum -y clean all && rm -rf /var/cache/yum
 
-# Install cmake
-RUN \
-  curl -LO https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz \
-  && tar -xzf cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz -C /usr/local --strip-components=1 \
-  && rm cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz 
+# Install cmake (detect architecture)
+RUN ARCH=$(uname -m) && \
+  curl -LO https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-${ARCH}.tar.gz \
+  && tar -xzf cmake-${CMAKE_VERSION}-linux-${ARCH}.tar.gz -C /usr/local --strip-components=1 \
+  && rm cmake-${CMAKE_VERSION}-linux-${ARCH}.tar.gz
 
-# Install ninja build
-RUN \
-  curl -LO https://github.com/ninja-build/ninja/releases/download/v${NINJA_VERSION}/ninja-linux.zip \
-  && unzip ninja-linux.zip -d /usr/local/bin \
-  && rm ninja-linux.zip
+# Install ninja build (detect architecture)
+RUN ARCH=$(uname -m) && \
+  if [ "$ARCH" = "x86_64" ]; then NINJA_ARCH="linux"; else NINJA_ARCH="linux-aarch64"; fi && \
+  curl -LO https://github.com/ninja-build/ninja/releases/download/v${NINJA_VERSION}/ninja-${NINJA_ARCH}.zip \
+  && unzip ninja-${NINJA_ARCH}.zip -d /usr/local/bin \
+  && rm ninja-${NINJA_ARCH}.zip
 
 # Install vcpkg
 RUN mkdir -p /opt \

@@ -67,6 +67,35 @@ Run the locally built container in the interactive mode:
 
     docker run -v `pwd`:/data -it miarec/rockylinux9-cpp:latest
 
+## Build AMD64 images on Apple Silicon (macOS)
+
+Docker Desktop on Apple Silicon runs Linux containers inside a Linux VM. To build or run
+`linux/amd64` images on an ARM64 host, you need QEMU emulation registered via `binfmt_misc`.
+The easiest way is to install the binfmt handlers with `tonistiigi/binfmt`:
+
+```bash
+docker run --privileged --rm tonistiigi/binfmt --install all
+```
+
+Build an AMD64 image (example):
+
+```bash
+docker buildx build --platform linux/amd64 -t miarec/rockylinux9-cpp:latest rockylinux9-cpp
+```
+
+Run an AMD64 image:
+
+```bash
+docker run --platform linux/amd64 -v `pwd`:/data -it miarec/rockylinux9-cpp:latest
+```
+
+### Why Rosetta is not enough
+
+Rosetta translates **macOS** x86_64 binaries. Docker containers run **Linux** binaries inside a
+Linux VM, and the Linux VM needs `binfmt_misc` handlers to execute foreign-arch ELF binaries.
+Rosetta does not register those handlers inside the Linux VM, so it cannot satisfy Docker’s
+`RUN` steps for `linux/amd64` images. QEMU + `binfmt_misc` is required.
+
 
 ## Upload to Docker Hub
 
