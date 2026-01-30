@@ -35,13 +35,12 @@ RUN yum install -y \
    devtoolset-7-gcc-c++ \
    devtoolset-7-gdb \
    devtoolset-7-valgrind \
-   gcc-debuginfo \
    make automake libtool \
    flex bison \
    rh-git227-git \
    libpcap-devel \
    # perl packages are required for OpenSSL
-   perl-FindBin perl-IPC-Cmd \
+   perl-IPC-Cmd \
    && \
   #
   # cleanup
@@ -69,26 +68,33 @@ RUN mkdir -p /opt \
 
 ENV VCPKG_INSTALLATION_ROOT=/opt/vcpkg
 ENV PATH="${PATH}:/opt/vcpkg"
+ENV MANPATH=
+ENV PERL5LIB=
+ENV LD_LIBRARY_PATH=
+ENV INFOPATH=
+ENV PYTHONPATH=
+ENV rpmlibdir=/usr/lib64
+ENV rpmlibdir32=/usr/lib
 
 # Enable rh-git227
 # Copy/paste code from /opt/rh/rh-git227/enable
 ENV PATH=/opt/rh/rh-git227/root/usr/bin${PATH:+:${PATH}}
-ENV MANPATH=/opt/rh/rh-git227/root/usr/share/man:${MANPATH}
+ENV MANPATH=/opt/rh/rh-git227/root/usr/share/man${MANPATH:+:${MANPATH}}
 ENV PERL5LIB=/opt/rh/rh-git227/root/usr/share/perl5/vendor_perl${PERL5LIB:+:${PERL5LIB}}
 ENV LD_LIBRARY_PATH=/opt/rh/httpd24/root/usr/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
 
 # Enable devtoolset-7
 # Copy/paste code from /opt/rh/devtoolset-7/enable
 ENV PATH=/opt/rh/devtoolset-7/root/usr/bin${PATH:+:${PATH}}
-ENV MANPATH=/opt/rh/devtoolset-7/root/usr/share/man:${MANPATH}
+ENV MANPATH=/opt/rh/devtoolset-7/root/usr/share/man${MANPATH:+:${MANPATH}}
 ENV INFOPATH=/opt/rh/devtoolset-7/root/usr/share/info${INFOPATH:+:${INFOPATH}}
 ENV PCP_DIR=/opt/rh/devtoolset-7/root
 # Some perl Ext::MakeMaker versions install things under /usr/lib/perl5
 # even though the system otherwise would go to /usr/lib64/perl5.
 ENV PERL5LIB=/opt/rh/devtoolset-7/root//usr/lib64/perl5/vendor_perl:/opt/rh/devtoolset-7/root/usr/lib/perl5:/opt/rh/devtoolset-7/root//usr/share/perl5/vendor_perl${PERL5LIB:+:${PERL5LIB}}
 
-ENV LD_LIBRARY_PATH=/opt/rh/devtoolset-7/root$rpmlibdir$rpmlibdir32${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
-ENV LD_LIBRARY_PATH=/opt/rh/devtoolset-7/root$rpmlibdir$rpmlibdir32:/opt/rh/devtoolset-7/root$rpmlibdir/dyninst$rpmlibdir32/dyninst${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}       
+ENV LD_LIBRARY_PATH=/opt/rh/devtoolset-7/root${rpmlibdir}:/opt/rh/devtoolset-7/root${rpmlibdir32}${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+ENV LD_LIBRARY_PATH=/opt/rh/devtoolset-7/root${rpmlibdir}:/opt/rh/devtoolset-7/root${rpmlibdir32}:/opt/rh/devtoolset-7/root${rpmlibdir}/dyninst:/opt/rh/devtoolset-7/root${rpmlibdir32}/dyninst${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
 # duplicate python site.py logic for sitepackages
 ENV PYTHONPATH=/opt/rh/devtoolset-7/root/usr/lib64/python2.7/site-packages:/opt/rh/devtoolset-7/root/usr/lib/python2.7/site-packages${PYTHONPATH:+:${PYTHONPATH}}
 
@@ -97,4 +103,4 @@ ENV PYTHONPATH=/opt/rh/devtoolset-7/root/usr/lib64/python2.7/site-packages:/opt/
 RUN git config --global --add safe.directory '*'
 
 WORKDIR /data
-CMD  /bin/bash
+CMD ["/bin/bash"]
