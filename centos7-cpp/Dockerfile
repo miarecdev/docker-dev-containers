@@ -69,6 +69,7 @@ RUN mkdir -p /opt \
     && /opt/vcpkg/bootstrap-vcpkg.sh -disableMetrics
 
 ENV VCPKG_INSTALLATION_ROOT=/opt/vcpkg
+ENV VCPKG_ROOT=/opt/vcpkg
 ENV PATH="${PATH}:/opt/vcpkg"
 ENV LANG=en_US.UTF-8
 ENV LC_ALL=en_US.UTF-8
