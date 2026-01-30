@@ -35,6 +35,7 @@ RUN yum install -y \
    devtoolset-7-gcc-c++ \
    devtoolset-7-gdb \
    devtoolset-7-valgrind \
+   glibc-common \
    make automake libtool \
    flex bison \
    rh-git227-git \
@@ -42,6 +43,7 @@ RUN yum install -y \
    # perl packages are required for OpenSSL
    perl-IPC-Cmd \
    && \
+  localedef -i en_US -f UTF-8 en_US.UTF-8 && \
   #
   # cleanup
   #
@@ -68,6 +70,8 @@ RUN mkdir -p /opt \
 
 ENV VCPKG_INSTALLATION_ROOT=/opt/vcpkg
 ENV PATH="${PATH}:/opt/vcpkg"
+ENV LANG=en_US.UTF-8
+ENV LC_ALL=en_US.UTF-8
 ENV MANPATH=
 ENV PERL5LIB=
 ENV LD_LIBRARY_PATH=
