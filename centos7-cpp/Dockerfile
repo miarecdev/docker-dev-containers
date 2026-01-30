@@ -4,7 +4,7 @@ LABEL org.opencontainers.image.source="https://github.com/miarecdev/docker-dev-c
 LABEL "maintainer"="MiaRec dev@miarec.com"
 
 ARG CMAKE_VERSION=3.29.0
-ARG NINJA_VERSION=1.12.1
+ARG NINJA_VERSION=1.13.2
 
 
 # Point to yum to vault.centos.org because mirror.centos.org is not available anymore (EOL)
@@ -40,6 +40,8 @@ RUN yum install -y \
    flex bison \
    rh-git227-git \
    libpcap-devel \
+   # Kernel headers (required for building openssl)
+   kernel-headers \
    # perl packages are required for OpenSSL
    perl-IPC-Cmd \
    && \
@@ -49,59 +51,39 @@ RUN yum install -y \
   #
   yum -y clean all && rm -rf /var/cache/yum
 
+# Enable SCL toolsets for all shells
+RUN printf 'source /opt/rh/devtoolset-7/enable\nsource /opt/rh/rh-git227/enable\n' > /etc/profile.d/scl_enable.sh
+ENV BASH_ENV=/etc/profile.d/scl_enable.sh
+ENV ENV=/etc/profile.d/scl_enable.sh
+ENV PROMPT_COMMAND=". /etc/profile.d/scl_enable.sh"
+
+SHELL ["/bin/bash", "-lc"]
+
 # Install cmake (detect architecture)
 RUN ARCH=$(uname -m) && \
   curl -LO https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-${ARCH}.tar.gz \
   && tar -xzf cmake-${CMAKE_VERSION}-linux-${ARCH}.tar.gz -C /usr/local --strip-components=1 \
   && rm cmake-${CMAKE_VERSION}-linux-${ARCH}.tar.gz
 
-# Install ninja build (detect architecture)
-RUN ARCH=$(uname -m) && \
-  if [ "$ARCH" = "x86_64" ]; then NINJA_ARCH="linux"; else NINJA_ARCH="linux-aarch64"; fi && \
-  curl -LO https://github.com/ninja-build/ninja/releases/download/v${NINJA_VERSION}/ninja-${NINJA_ARCH}.zip \
-  && unzip ninja-${NINJA_ARCH}.zip -d /usr/local/bin \
-  && rm ninja-${NINJA_ARCH}.zip
+# Install ninja build from source to avoid libstdc++ ABI issues on CentOS 7
+RUN curl -LO https://github.com/ninja-build/ninja/archive/refs/tags/v${NINJA_VERSION}.tar.gz \
+  && tar -xzf v${NINJA_VERSION}.tar.gz \
+  && cmake -S ninja-${NINJA_VERSION} -B ninja-build -DCMAKE_BUILD_TYPE=Release \
+  && cmake --build ninja-build \
+  && install -m 0755 ninja-build/ninja /usr/local/bin/ninja \
+  && rm -rf ninja-build ninja-${NINJA_VERSION} v${NINJA_VERSION}.tar.gz
 
 # Install vcpkg
 RUN mkdir -p /opt \
-    && source /opt/rh/rh-git227/enable \
     && git clone https://github.com/Microsoft/vcpkg.git /opt/vcpkg \ 
     && /opt/vcpkg/bootstrap-vcpkg.sh -disableMetrics
 
 ENV VCPKG_INSTALLATION_ROOT=/opt/vcpkg
 ENV VCPKG_ROOT=/opt/vcpkg
 ENV PATH="${PATH}:/opt/vcpkg"
+ENV VCPKG_FORCE_SYSTEM_BINARIES=1
 ENV LANG=en_US.UTF-8
 ENV LC_ALL=en_US.UTF-8
-ENV MANPATH=
-ENV PERL5LIB=
-ENV LD_LIBRARY_PATH=
-ENV INFOPATH=
-ENV PYTHONPATH=
-ENV rpmlibdir=/usr/lib64
-ENV rpmlibdir32=/usr/lib
-
-# Enable rh-git227
-# Copy/paste code from /opt/rh/rh-git227/enable
-ENV PATH=/opt/rh/rh-git227/root/usr/bin${PATH:+:${PATH}}
-ENV MANPATH=/opt/rh/rh-git227/root/usr/share/man${MANPATH:+:${MANPATH}}
-ENV PERL5LIB=/opt/rh/rh-git227/root/usr/share/perl5/vendor_perl${PERL5LIB:+:${PERL5LIB}}
-ENV LD_LIBRARY_PATH=/opt/rh/httpd24/root/usr/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
-
-# Enable devtoolset-7
-# Copy/paste code from /opt/rh/devtoolset-7/enable
-ENV PATH=/opt/rh/devtoolset-7/root/usr/bin${PATH:+:${PATH}}
-ENV MANPATH=/opt/rh/devtoolset-7/root/usr/share/man${MANPATH:+:${MANPATH}}
-ENV INFOPATH=/opt/rh/devtoolset-7/root/usr/share/info${INFOPATH:+:${INFOPATH}}
-ENV PCP_DIR=/opt/rh/devtoolset-7/root
-# Some perl Ext::MakeMaker versions install things under /usr/lib/perl5
-# even though the system otherwise would go to /usr/lib64/perl5.
-ENV PERL5LIB=/opt/rh/devtoolset-7/root//usr/lib64/perl5/vendor_perl:/opt/rh/devtoolset-7/root/usr/lib/perl5:/opt/rh/devtoolset-7/root//usr/share/perl5/vendor_perl${PERL5LIB:+:${PERL5LIB}}
-
-ENV LD_LIBRARY_PATH=/opt/rh/devtoolset-7/root${rpmlibdir}:/opt/rh/devtoolset-7/root${rpmlibdir32}${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
-ENV LD_LIBRARY_PATH=/opt/rh/devtoolset-7/root${rpmlibdir}:/opt/rh/devtoolset-7/root${rpmlibdir32}:/opt/rh/devtoolset-7/root${rpmlibdir}/dyninst:/opt/rh/devtoolset-7/root${rpmlibdir32}/dyninst${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
-# duplicate python site.py logic for sitepackages
-ENV PYTHONPATH=/opt/rh/devtoolset-7/root/usr/lib64/python2.7/site-packages:/opt/rh/devtoolset-7/root/usr/lib/python2.7/site-packages${PYTHONPATH:+:${PYTHONPATH}}
 
 
 # Fix issue "detected dubious ownership in repository"
