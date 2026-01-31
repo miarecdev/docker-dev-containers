@@ -52,6 +52,7 @@ RUN yum install -y \
   yum -y clean all && rm -rf /var/cache/yum
 
 # Enable SCL toolsets for all shells
+# SRC: https://github.com/sclorg/devtoolset-container
 RUN printf 'source /opt/rh/devtoolset-7/enable\nsource /opt/rh/rh-git227/enable\n' > /etc/profile.d/scl_enable.sh
 ENV BASH_ENV=/etc/profile.d/scl_enable.sh
 ENV ENV=/etc/profile.d/scl_enable.sh
