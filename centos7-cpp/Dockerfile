@@ -70,7 +70,7 @@ RUN ARCH=$(uname -m) && \
 RUN curl -LO https://github.com/ninja-build/ninja/archive/refs/tags/v${NINJA_VERSION}.tar.gz \
   && tar -xzf v${NINJA_VERSION}.tar.gz \
   && cmake -S ninja-${NINJA_VERSION} -B ninja-build -DCMAKE_BUILD_TYPE=Release \
-  && cmake --build ninja-build \
+  && cmake --build ninja-build -- -j"$(nproc)" \
   && install -m 0755 ninja-build/ninja /usr/local/bin/ninja \
   && rm -rf ninja-build ninja-${NINJA_VERSION} v${NINJA_VERSION}.tar.gz
 
