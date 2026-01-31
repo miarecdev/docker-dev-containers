@@ -44,6 +44,7 @@ RUN yum install -y \
    kernel-headers \
    # perl packages are required for OpenSSL
    perl-IPC-Cmd \
+   perl-Time-Piece \
    && \
   localedef -i en_US -f UTF-8 en_US.UTF-8 && \
   #
