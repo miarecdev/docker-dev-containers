@@ -25,7 +25,7 @@ jobs:
 
             matrix:
                 image:
-                    # - centos7-cpp       # GitHub Actions runners do not support CentOS 7 anymore
+                    - centos7-cpp       # GitHub Actions runners do not support CentOS 7 anymore
                     - rockylinux8-cpp
                     - rockylinux9-cpp
                     - ubuntu20.04-cpp
