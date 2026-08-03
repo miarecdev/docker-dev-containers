@@ -45,6 +45,13 @@ RUN ARCH=$(uname -m) && \
   && unzip ninja-${NINJA_ARCH}.zip -d /usr/local/bin \
   && rm ninja-${NINJA_ARCH}.zip
 
+
+# Install clang-tidy for the clang-tidy quality gate in the CI lint steps
+# (clang-tools-extra provides both clang-tidy and run-clang-tidy). The distro
+# version is not pinned; the quality gate that enforces findings runs on the
+# ubuntu-24.04 image, where the LLVM major is pinned.
+RUN dnf install -y clang-tools-extra && dnf -y clean all
+
 # Install vcpkg
 RUN mkdir -p /opt \
     && git clone https://github.com/Microsoft/vcpkg.git /opt/vcpkg \ 

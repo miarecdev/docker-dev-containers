@@ -3,7 +3,7 @@ This file provides guidance to coding agent when working with code in this repos
 ## Repository Purpose
 
 This repository contains Docker images for:
-- **C++ development**: Used to build the MiaRec recorder in GitHub Actions workflows. Images include CMake, G++, Ninja Build, and vcpkg.
+- **C++ development**: Used to build the MiaRec recorder in GitHub Actions workflows. Images include CMake, G++, Ninja Build, vcpkg, and clang-tidy (pinned LLVM major on Ubuntu images — the clang-tidy CI quality gate baseline; distro version on Rocky Linux).
 - **Testing**: TLS-enabled containers (Redis, PostgreSQL) for local testing of secure connections.
 
 ## Build Commands
@@ -98,6 +98,6 @@ Note: TLS test containers (redis-tls, postgres-tls) are not built by CI; they ar
 **C++ images**: Before submitting changes:
 1. Build the image locally
 2. Verify it starts with `/bin/bash` and mounts `/data`
-3. Smoke-test key tools: `cmake --version`, `ninja --version`, `git --version`, `vcpkg version`
+3. Smoke-test key tools: `cmake --version`, `ninja --version`, `git --version`, `vcpkg version`, `clang-tidy --version`, `run-clang-tidy -h`
 
 **TLS test containers**: Use `make test` in the respective directory (redis-tls or postgres-tls) to verify the container works correctly.
