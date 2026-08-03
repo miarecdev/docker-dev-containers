@@ -3,7 +3,13 @@ LABEL org.opencontainers.image.source="https://github.com/miarecdev/docker-dev-c
 
 LABEL "maintainer"="MiaRec dev@miarec.com"
 
-ARG CMAKE_VERSION=3.29.0
+# x86_64: CMake must satisfy the vcpkg master scripts, which this image runs
+# with the system CMake (VCPKG_FORCE_SYSTEM_BINARIES below): vcpkg currently
+# requires 4.4 (e.g. string(JSON ... STRING_ENCODE) in z_vcpkg_spdx.cmake).
+# aarch64 stays on 3.29: Kitware's 4.4 aarch64 binary needs glibc 2.28,
+# CentOS 7 has 2.17. No CI job builds on the CentOS 7 aarch64 image.
+ARG CMAKE_VERSION=4.4.0
+ARG CMAKE_VERSION_AARCH64=3.29.0
 ARG NINJA_VERSION=1.13.2
 
 
@@ -61,11 +67,12 @@ ENV PROMPT_COMMAND=". /etc/profile.d/scl_enable.sh"
 
 SHELL ["/bin/bash", "-lc"]
 
-# Install cmake (detect architecture)
+# Install cmake (detect architecture; see version comment at the ARGs above)
 RUN ARCH=$(uname -m) && \
-  curl -LO https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-${ARCH}.tar.gz \
-  && tar -xzf cmake-${CMAKE_VERSION}-linux-${ARCH}.tar.gz -C /usr/local --strip-components=1 \
-  && rm cmake-${CMAKE_VERSION}-linux-${ARCH}.tar.gz
+  if [ "$ARCH" = "aarch64" ]; then VER=${CMAKE_VERSION_AARCH64}; else VER=${CMAKE_VERSION}; fi && \
+  curl -LO https://github.com/Kitware/CMake/releases/download/v${VER}/cmake-${VER}-linux-${ARCH}.tar.gz \
+  && tar -xzf cmake-${VER}-linux-${ARCH}.tar.gz -C /usr/local --strip-components=1 \
+  && rm cmake-${VER}-linux-${ARCH}.tar.gz
 
 # Install ninja build from source to avoid libstdc++ ABI issues on CentOS 7
 RUN curl -LO https://github.com/ninja-build/ninja/archive/refs/tags/v${NINJA_VERSION}.tar.gz \
