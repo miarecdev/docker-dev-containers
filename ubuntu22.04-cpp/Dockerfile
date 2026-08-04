@@ -6,6 +6,7 @@ LABEL "maintainer"="MiaRec dev@miarec.com"
 ARG CMAKE_VERSION=3.29.0
 ARG NINJA_VERSION=1.12.1
 ARG LLVM_VERSION=21
+ARG VCPKG_COMMIT=29ff5b8131d0c6c8fcb8fbaef35992f0d507cd7c
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -50,10 +51,14 @@ RUN . /etc/os-release && \
   ln -s /usr/bin/run-clang-tidy-${LLVM_VERSION} /usr/local/bin/run-clang-tidy && \
   rm -rf /var/lib/apt/lists/*
 
-# Install vcpkg
+# Install vcpkg pinned to a known-good commit so a routine image rebuild cannot
+# silently pick up incompatible vcpkg changes. The pin must be at or newer than
+# the builtin baseline in the consuming project's vcpkg-configuration.json.
 RUN mkdir -p /opt \
-    && git clone https://github.com/Microsoft/vcpkg.git /opt/vcpkg \ 
-    && /opt/vcpkg/bootstrap-vcpkg.sh -disableMetrics
+    && git clone https://github.com/Microsoft/vcpkg.git /opt/vcpkg \
+    && cd /opt/vcpkg \
+    && git checkout ${VCPKG_COMMIT} \
+    && ./bootstrap-vcpkg.sh -disableMetrics
 
 ENV VCPKG_INSTALLATION_ROOT=/opt/vcpkg
 ENV VCPKG_ROOT=/opt/vcpkg
