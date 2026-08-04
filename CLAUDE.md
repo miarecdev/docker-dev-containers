@@ -74,7 +74,7 @@ All C++ images follow the same structure:
 1. Base OS setup and package manager configuration
 2. Development tools installation (gcc, make, git, etc.)
 3. CMake and Ninja installation from GitHub releases (versions pinned via ARGs)
-4. vcpkg installation to `/opt/vcpkg` with `VCPKG_ROOT` and `VCPKG_INSTALLATION_ROOT` environment variables set
+4. vcpkg installation to `/opt/vcpkg` (commit pinned via `ARG VCPKG_COMMIT`, same commit in all images; must be at or newer than the builtin baseline in the consuming project's `vcpkg-configuration.json`) with `VCPKG_ROOT` and `VCPKG_INSTALLATION_ROOT` environment variables set
 
 ## CI/CD
 
