@@ -65,7 +65,7 @@ See [postgres-tls/README.md](postgres-tls/README.md) for SSL modes and configura
 
 ## Architecture
 
-- **Distro folders** (`rockylinux8-cpp`, `rockylinux9-cpp`, `ubuntu20.04-cpp`, `ubuntu22.04-cpp`, `ubuntu24.04-cpp`): Each contains a single Dockerfile for that base image
+- **Distro folders** (`rockylinux8-cpp`, `rockylinux9-cpp`, `ubuntu20.04-cpp`, `ubuntu22.04-cpp`, `ubuntu24.04-cpp`, `ubuntu26.04-cpp`): Each contains a single Dockerfile for that base image
 - **redis-tls/**: Redis with TLS enabled for testing secure connections (Makefile-driven)
 - **postgres-tls/**: PostgreSQL with TLS enabled for testing secure connections (Makefile-driven)
 - **centos7-cpp/**: Deprecated, not supported on GitHub Actions runners

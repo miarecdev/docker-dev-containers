@@ -13,6 +13,7 @@ A primary use case for these containers is to build MiaRec recorder (C++ applica
 - [ubuntu20.04-cpp](ubuntu20.04-cpp/Dockerfile): Ubuntu 20.04
 - [ubuntu22.04-cpp](ubuntu22.04-cpp/Dockerfile): Ubuntu 22.04
 - [ubuntu24.04-cpp](ubuntu24.04-cpp/Dockerfile): Ubuntu 24.04
+- [ubuntu26.04-cpp](ubuntu26.04-cpp/Dockerfile): Ubuntu 26.04
 
 
 ## Containers for testing
