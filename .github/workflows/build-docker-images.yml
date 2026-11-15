@@ -31,6 +31,7 @@ jobs:
                     - ubuntu20.04-cpp
                     - ubuntu22.04-cpp
                     - ubuntu24.04-cpp
+                    - ubuntu26.04-cpp
                 runner:
                     - ubuntu-24.04
                     - ubuntu-24.04-arm
@@ -79,6 +80,7 @@ jobs:
                     - ubuntu20.04-cpp
                     - ubuntu22.04-cpp
                     - ubuntu24.04-cpp
+                    - ubuntu26.04-cpp
 
         steps:
             - name: Login to GitHub Container Registry
